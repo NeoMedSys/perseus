@@ -368,7 +368,7 @@ ntl logs
 
 Perseus is open source and welcomes contributions:
 
-1. Fork the repository
+1. Fork or clone the repository
 2. Create a feature branch
 3. Follow the existing code style (tabs, not spaces)
 4. Test on a VM first
