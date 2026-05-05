@@ -198,7 +198,8 @@ in
         source = pkgs.writeText "toggle-wifi" ''
           INTERFACE=$1
           ACTION=$2
-          if [ "$INTERFACE" = "enp5s0u2u4" ]; then
+          IFACE_TYPE=$(${pkgs.networkmanager}/bin/nmcli -g GENERAL.TYPE dev show "$INTERFACE" 2>/dev/null)
+          if [ "$IFACE_TYPE" = "ethernet" ]; then
             if [ "$ACTION" = "up" ]; then
               ${pkgs.networkmanager}/bin/nmcli radio wifi off
             elif [ "$ACTION" = "down" ]; then
