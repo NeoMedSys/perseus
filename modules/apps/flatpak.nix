@@ -41,6 +41,9 @@
         --env=SLACK_DISABLE_TELEMETRY=1 \
         --env=ELECTRON_OZONE_PLATFORM_HINT=auto \
         --env=ELECTRON_ENABLE_FEATURES=WebRTCPipeWireCapturer
+      # --- SLACK portal permissions (camera/mic for calls) ---
+      ${pkgs.flatpak}/bin/flatpak permission-set devices camera com.slack.Slack yes
+      ${pkgs.flatpak}/bin/flatpak permission-set devices microphone com.slack.Slack yes
       # --- SPOTIFY (audio only) ---
       ${pkgs.flatpak}/bin/flatpak override --system com.spotify.Client \
         --socket=wayland \
@@ -78,6 +81,9 @@
         --env=TEAMS_NO_BACKGROUND=1 \
         --env=ELECTRON_OZONE_PLATFORM_HINT=auto \
         --env=ELECTRON_ENABLE_FEATURES=WebRTCPipeWireCapturer
+      # --- TEAMS portal permissions (camera/mic for calls) ---
+      ${pkgs.flatpak}/bin/flatpak permission-set devices camera com.github.IsmaelMartinez.teams_for_linux yes
+      ${pkgs.flatpak}/bin/flatpak permission-set devices microphone com.github.IsmaelMartinez.teams_for_linux yes
       # --- ZOOM (video calls, screen sharing) ---
       ${pkgs.flatpak}/bin/flatpak override --system us.zoom.Zoom \
         --socket=wayland \
