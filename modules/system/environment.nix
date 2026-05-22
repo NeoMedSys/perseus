@@ -7,8 +7,8 @@ let
       -gravity center -resize 96x96^ -extent 96x96 $out
   '' ;
   resolvConfForSandbox = pkgs.writeText "resolv.conf" ''
-    nameserver 1.1.1.1
-    nameserver 8.8.8.8
+    nameserver 127.0.0.1
+    nameserver ::1
   '' ;
 in
 {
@@ -92,7 +92,7 @@ in
     tlp = {
       enable = true;
       settings = {
-        RESTORE_DEVICE_STATE_ON_STARTUP = 1;
+        RESTORE_DEVICE_STATE_ON_STARTUP = 0;
         DEVICES_TO_DISABLE_ON_STARTUP = "";
         TLP_LID_SWITCH_AC = "ignore";
         TLP_LID_SWITCH_BAT = "ignore";
@@ -101,8 +101,8 @@ in
         NATACPI_ENABLE = 1;
         TPACPI_ENABLE = 1;
         TPSMAPI_ENABLE = 1;
-        USB_AUTOSUSPEND_ON_AC = "on";
-        USB_AUTOSUSPEND_ON_BAT = "on";
+        USB_AUTOSUSPEND_ON_AC = "off";
+        USB_AUTOSUSPEND_ON_BAT = "off";
         PCIE_ASPM_ON_AC = "powersave";
         
         # EXTREMELY IMPORTANT: Consolidated PCIe Denylist
@@ -145,6 +145,7 @@ in
 
     # Ensure uinput is accessible for Steam
     KERNEL=="uinput", MODE="0660", GROUP="input", OPTIONS+="static_node=uinput"
+
   '';
   };
   # ========================
@@ -191,12 +192,14 @@ in
   networking = {
     networkmanager = {
       enable = true;
+      wifi.powersave = false;
       dispatcherScripts = [{
         type = "basic";
         source = pkgs.writeText "toggle-wifi" ''
           INTERFACE=$1
           ACTION=$2
-          if [ "$INTERFACE" = "enp5s0u2u4" ]; then
+          IFACE_TYPE=$(${pkgs.networkmanager}/bin/nmcli -g GENERAL.TYPE dev show "$INTERFACE" 2>/dev/null)
+          if [ "$IFACE_TYPE" = "ethernet" ]; then
             if [ "$ACTION" = "up" ]; then
               ${pkgs.networkmanager}/bin/nmcli radio wifi off
             elif [ "$ACTION" = "down" ]; then

@@ -1,0 +1,16 @@
+ flake.lock                                |  67 ++++++------
+ home/zsh/default.nix                      |  15 +++
+ hosts/default/configuration.nix           |   7 +-
+ modules/apps/flatpak.nix                  |  53 +++++++---
+ modules/dev/nixvim.nix                    |  12 +++
+ modules/hardware/clammy.nix               |  19 +++-
+ modules/hardware/thunderbolt-ethernet.nix |   8 ++
+ modules/system/environment.nix            |  15 +--
+ modules/system/niri.nix                   |   6 +-
+ modules/system/system-packages.nix        |   4 +
+ packages/sandboxed-steam.nix              |   9 +-
+ programs/clammy/src/state.rs              |  50 +++++----
+ programs/clammy/src/wayland_manager.rs    |  76 +++++++++++---
+ programs/clammy/src/wayland_output.rs     | 118 ++++++++++-----------
+ programs/niri-reaper/src/main.rs          | 168 ++++++++++++++++++++++++------
+ 15 files changed, 442 insertions(+), 185 deletions(-)

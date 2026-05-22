@@ -16,6 +16,10 @@ let
     export ISOLATION_DIR="$HOME/.local/share/app-isolation/steam"
     mkdir -p "$ISOLATION_DIR"
 
+    # Disable browser hardware accel (black screen fix for xwayland)
+    mkdir -p "$ISOLATION_DIR/.local/share/Steam/config"
+    echo '"SteamClient" { "DisableBrowserHardwareAccel" "1" }' > "$ISOLATION_DIR/.local/share/Steam/config/steam_dev.cfg"
+
     # 2. Fix NixOS 25.11 'unbound variable' crashes
     # The wrapper script uses 'set -u', so these MUST be defined.
     export LD_LIBRARY_PATH="''${LD_LIBRARY_PATH:-}"
@@ -27,6 +31,7 @@ let
     export HOME="$ISOLATION_DIR"
     # Ensure the bootstrap can find tar/gzip/etc.
     export PATH="${pkgs.lib.makeBinPath runtimeDependencies}:/run/current-system/sw/bin:$PATH"
+
 
     # 4. Environment variables for Display/Audio/Controller
     : ''${XDG_RUNTIME_DIR:=/run/user/$(id -u)}
@@ -53,8 +58,10 @@ let
       -E "WAYLAND_DISPLAY=$WAYLAND_DISPLAY" \
       -E "XDG_RUNTIME_DIR=$XDG_RUNTIME_DIR" \
       -E "NIXOS_OZONE_WL=1" \
+      -E "STEAMWEBHELPER_ARGS=--disable-gpu" \
+      -E "STEAM_DISABLE_BROWSER_HARDWARE_ACCEL=1" \
       ${pkgs.steam}/bin/steam \
-        -silent \
+        -cef-disable-gpu-compositing \
         -console \
         "$@"
   '';

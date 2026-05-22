@@ -36,6 +36,7 @@
         }
     }
 
+
     // =====================
     // LAYOUT CONFIGURATION
     // =====================
@@ -305,13 +306,13 @@
     spawn-at-startup "opensnitch-ui"
     spawn-at-startup "clammy-start-session"
     spawn-at-startup "ntl-daemon"
+    spawn-at-startup "niri-reaper"
 
     // Clipboard history (for DMS clipboard widget)
     spawn-at-startup "bash" "-c" "wl-paste --watch cliphist store &"
 
     // Environment for portals
     environment {
-        DISPLAY ":0"
         XDG_CURRENT_DESKTOP "niri"
         XDG_SESSION_TYPE "wayland"
         XDG_SESSION_DESKTOP "niri"
@@ -345,9 +346,10 @@
     };
   };
 
-  # PAM for swaylock (backup if DMS lock fails)
   security.pam.services.swaylock = {
     text = ''
+      auth [success=1 default=ignore] pam_exec.so quiet /run/current-system/sw/bin/check-docked
+      auth [success=done default=ignore] pam_fprintd.so
       auth required pam_unix.so nullok
       account required pam_unix.so
       session required pam_unix.so

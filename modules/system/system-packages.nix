@@ -7,6 +7,7 @@ let
   dgop = inputs.dgop.packages.${pkgs.system}.default;
   ntl-daemon = pkgs.callPackage ../../packages/ntl-daemon.nix {};
   niri-reaper = pkgs.callPackage ../../packages/niri-reaper.nix {};
+  sandboxed-steam = pkgs.callPackage ../../packages/sandboxed-steam.nix {};
 in
 {
   # Global software packages to install
@@ -88,6 +89,7 @@ in
     gamescope
     mangohud
     antimicrox
+    sandboxed-steam
 
     # Network tools
     dig
@@ -157,6 +159,8 @@ in
     # Pandoc and live MD rendering script
     pandoc
     wkhtmltopdf
+    typst
+    tinymist
     (pkgs.writeScriptBin "mdlive" ''
       #!/bin/bash
       FILE="$1"

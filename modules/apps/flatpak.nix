@@ -1,19 +1,19 @@
 { pkgs, userConfig, ... }:
-
 {
   services.flatpak.enable = true;
-
   services.flatpak.remotes = [
     { name = "flathub"; location = "https://dl.flathub.org/repo/flathub.flatpakrepo"; }
+    { name = "flathub-beta"; location = "https://flathub.org/beta-repo/flathub-beta.flatpakrepo"; }
   ];
 
-  services.flatpak.packages = userConfig.flatpakApps or [];
+  services.flatpak.packages = userConfig.flatpakApps ++ [
+    { appId = "com.stremio.Stremio"; origin = "flathub-beta"; }
+  ];
 
   # Ensure Flatpak apps appear in launcher
   environment.sessionVariables = {
     XDG_DATA_DIRS = [ "/var/lib/flatpak/exports/share" ];
   };
-
   # Apply permission overrides after Flatpak apps are installed
   systemd.services.flatpak-managed-install.serviceConfig.ExecStartPost =
     pkgs.writeShellScript "flatpak-overrides" ''
@@ -25,7 +25,6 @@
         --nosocket=cups \
         --env=ELECTRON_DISABLE_CRASH_REPORTER=1 \
         --env=HOSTNAME=workstation
-
       # --- SLACK (video calls, screen sharing) ---
       ${pkgs.flatpak}/bin/flatpak override --system com.slack.Slack \
         --socket=wayland \
@@ -35,11 +34,16 @@
         --nosocket=x11 \
         --device=all \
         --filesystem=xdg-download \
+        --filesystem=xdg-run/pipewire-0 \
         --nofilesystem=home \
         --nofilesystem=host \
         --talk-name=org.freedesktop.portal.Camera \
-        --env=SLACK_DISABLE_TELEMETRY=1
-
+        --env=SLACK_DISABLE_TELEMETRY=1 \
+        --env=ELECTRON_OZONE_PLATFORM_HINT=auto \
+        --env=ELECTRON_ENABLE_FEATURES=WebRTCPipeWireCapturer
+      # --- SLACK portal permissions (camera/mic for calls) ---
+      ${pkgs.flatpak}/bin/flatpak permission-set devices camera com.slack.Slack yes
+      ${pkgs.flatpak}/bin/flatpak permission-set devices microphone com.slack.Slack yes
       # --- SPOTIFY (audio only) ---
       ${pkgs.flatpak}/bin/flatpak override --system com.spotify.Client \
         --socket=wayland \
@@ -50,15 +54,16 @@
         --nofilesystem=host \
         --env=SPOTIFY_DISABLE_TELEMETRY=1 \
         --env=LIBGL_ALWAYS_SOFTWARE=1
-
       # --- STEAM ---
       ${pkgs.flatpak}/bin/flatpak override --system com.valvesoftware.Steam \
         --socket=wayland \
         --socket=x11 \
         --socket=pulseaudio \
         --device=all \
-        --filesystem=xdg-download
-
+        --filesystem=xdg-download \
+        --env=__NV_PRIME_RENDER_OFFLOAD=1 \
+        --env=__GLX_VENDOR_LIBRARY_NAME=nvidia \
+        --env=__VK_LAYER_NV_optimus=NVIDIA_only
       # --- TEAMS (video calls, screen sharing) ---
       ${pkgs.flatpak}/bin/flatpak override --system com.github.IsmaelMartinez.teams_for_linux \
         --socket=wayland \
@@ -68,11 +73,17 @@
         --nosocket=x11 \
         --device=all \
         --filesystem=xdg-download \
+        --filesystem=xdg-run/pipewire-0 \
         --nofilesystem=home \
         --nofilesystem=host \
         --talk-name=org.freedesktop.portal.Camera \
-        --env=TEAMS_DISABLE_TELEMETRY=1
-
+        --env=TEAMS_DISABLE_TELEMETRY=1 \
+        --env=TEAMS_NO_BACKGROUND=1 \
+        --env=ELECTRON_OZONE_PLATFORM_HINT=auto \
+        --env=ELECTRON_ENABLE_FEATURES=WebRTCPipeWireCapturer
+      # --- TEAMS portal permissions (camera/mic for calls) ---
+      ${pkgs.flatpak}/bin/flatpak permission-set devices camera com.github.IsmaelMartinez.teams_for_linux yes
+      ${pkgs.flatpak}/bin/flatpak permission-set devices microphone com.github.IsmaelMartinez.teams_for_linux yes
       # --- ZOOM (video calls, screen sharing) ---
       ${pkgs.flatpak}/bin/flatpak override --system us.zoom.Zoom \
         --socket=wayland \
@@ -86,6 +97,20 @@
         --nofilesystem=host \
         --talk-name=org.freedesktop.portal.Camera \
         --env=ZOOM_DISABLE_TELEMETRY=1 \
-        --env=ZOOM_DISABLE_ANALYTICS=1
-    '';
+        --env=ZOOM_DISABLE_ANALYTICS=1 \
+        --env=ELECTRON_OZONE_PLATFORM_HINT=auto \
+        --env=ELECTRON_ENABLE_FEATURES=WebRTCPipeWireCapturer
+      # --- STREMIO (media streaming, v5 from flathub-beta) ---
+      # CEF requires X11 socket via xwayland-satellite
+      # server.js needs ~/.stremio-server for config and cache
+      ${pkgs.flatpak}/bin/flatpak override --system com.stremio.Stremio \
+        --socket=wayland \
+        --socket=pulseaudio \
+        --socket=x11 \
+        --device=dri \
+        --filesystem=~/.stremio-server \
+        --nofilesystem=home \
+        --nofilesystem=host \
+        --env=STREMIO_DISABLE_TELEMETRY=1
+      '';
 }

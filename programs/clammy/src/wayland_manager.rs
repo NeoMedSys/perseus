@@ -26,6 +26,7 @@ pub struct WlDelegate {
     pub idle_timer_sleep: Option<ext_idle_notification_v1::ExtIdleNotificationV1>,
     pub idle_timer_dpms_off: Option<ext_idle_notification_v1::ExtIdleNotificationV1>,
     pub suspend_tx: TokioSender<DbusCommand>,
+    pub output_global_names: Vec<u32>,
 }
 
 pub fn run_wayland_listener(
@@ -43,6 +44,7 @@ pub fn run_wayland_listener(
         idle_timer_dpms: None,
         idle_timer_dpms_off: None,
         idle_timer_sleep: None,
+        output_global_names: Vec::new(),
     };
 
     let mut event_queue = conn.new_event_queue();
@@ -111,20 +113,70 @@ pub fn run_wayland_listener(
     }
 }
 
-// Dispatch Implementations for Registry, Seat, and Idle (NO CHANGES NEEDED TO IDLE LOGIC)
 impl Dispatch<wl_registry::WlRegistry, ()> for WlDelegate {
-    fn event(state: &mut Self, registry: &wl_registry::WlRegistry, event: wl_registry::Event, _: &(), _: &Connection, qh: &QueueHandle<Self>) {
-        if let wl_registry::Event::Global { name, interface, version } = event {
-            match interface.as_str() {
-                "ext_idle_notifier_v1" => { state.idle_notifier = Some(registry.bind(name, 1, qh, ())); }
-                "wl_seat" => { state.seat = Some(registry.bind(name, 1, qh, ())); }
-                _ => {}
-            }
-        }
-    }
+	fn event(state: &mut Self, registry: &wl_registry::WlRegistry, event: wl_registry::Event, _: &(), _: &Connection, qh: &QueueHandle<Self>) {
+		match event {
+			wl_registry::Event::Global { name, interface, version } => {
+				match interface.as_str() {
+					"ext_idle_notifier_v1" => {
+						state.idle_notifier = Some(registry.bind(name, 1, qh, ()));
+					}
+					"wl_seat" => {
+						state.seat = Some(registry.bind(name, 1, qh, ()));
+					}
+					"wl_output" => {
+						info!("Output global {} appeared", name);
+						state.output_global_names.push(name);
+
+						if let Err(e) = wayland_output::scan_outputs(&state.state) {
+							error!("Failed to re-scan outputs after addition: {}", e);
+							return;
+						}
+
+						let guard = state.state.lock().unwrap();
+						let lid_closed = guard.lid_closed;
+						let has_externals = guard.has_externals();
+						drop(guard);
+
+						if lid_closed && has_externals {
+							info!("Output added while lid closed. Entering clamshell mode.");
+							let guard = state.state.lock().unwrap();
+							if let Err(e) = wayland_output::configure_clamshell(&guard, state, qh) {
+								error!("Failed to configure clamshell on output add: {}", e);
+							}
+						}
+					}
+					_ => {}
+				}
+			}
+			wl_registry::Event::GlobalRemove { name } => {
+				if state.output_global_names.contains(&name) {
+					state.output_global_names.retain(|&n| n != name);
+					info!("Output global {} removed, re-scanning outputs", name);
+
+					if let Err(e) = wayland_output::scan_outputs(&state.state) {
+						error!("Failed to re-scan outputs after removal: {}", e);
+						return;
+					}
+
+					let guard = state.state.lock().unwrap();
+					let lid_closed = guard.lid_closed;
+					let has_externals = guard.has_externals();
+					drop(guard);
+
+					if lid_closed && !has_externals {
+						info!("Lid closed and no externals after output removal. Requesting suspend.");
+						match state.suspend_tx.blocking_send(DbusCommand::RequestLidClosedSuspend) {
+							Ok(_) => info!("Sent RequestLidClosedSuspend"),
+							Err(e) => error!("Failed to send RequestLidClosedSuspend: {}", e),
+						}
+					}
+				}
+			}
+			_ => {}
+		}
+	}
 }
-
-
 
 impl Dispatch<wl_seat::WlSeat, ()> for WlDelegate {
     fn event(_: &mut Self, _: &wl_seat::WlSeat, _: wl_seat::Event, _: &(), _: &Connection, _: &QueueHandle<Self>) {}

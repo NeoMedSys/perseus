@@ -38,7 +38,12 @@
   networking.hostName = userConfig.hostname;
   networking.hosts = lib.mkIf (userConfig ? extraHosts) userConfig.extraHosts;
 
-  boot.kernelPackages = pkgs.linuxPackages_latest;
+  boot = {
+    kernelPackages = pkgs.linuxPackages_6_18;
+    blacklistedKernelModules = [ "esp4" "esp6" "rxrpc" ];
+    kernelParams = [ "intel_pstate=passive" ];
+  };
+  services.thermald.enable = true;
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
   nixpkgs.config.allowUnfree = true;
   system.stateVersion = "25.05";
