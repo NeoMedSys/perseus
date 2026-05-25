@@ -1,0 +1,12 @@
+--- a/drivers/pci/of_property.c
++++ b/drivers/pci/of_property.c
+@@ -245,6 +245,9 @@ static int of_pci_prop_intr_map(struct pci_dev *pdev, struct of_changeset *ocs,
+ 				     &addr_sz[i]);
+ 	}
+ 
++	if (!pdev->subordinate)
++		return 0;
++
+ 	list_for_each_entry(child, &pdev->subordinate->devices, bus_list) {
+ 		for (pin = 1; pin <= OF_PCI_MAX_INT_PIN; pin++) {
+ 			i = pci_swizzle_interrupt_pin(child, pin) - 1;

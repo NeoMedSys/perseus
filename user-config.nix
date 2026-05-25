@@ -2,7 +2,7 @@
 {
   username = "user";
   hostname = "perseus";
-  timezone = "UTC";
+  timezone = "Europe/Amsterdam";
   isLaptop = false;
   hasGPU = false;
   browsers = ["librewolf" "firefox"];

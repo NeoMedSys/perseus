@@ -42,6 +42,10 @@
     kernelPackages = pkgs.linuxPackages_6_18;
     blacklistedKernelModules = [ "esp4" "esp6" "rxrpc" ];
     kernelParams = [ "intel_pstate=passive" ];
+    kernelPatches = [{
+      name = "pci-of-null-subordinate";
+      patch = ../../patches/pci-of-null-subordinate.patch;
+    }];
   };
   services.thermald.enable = true;
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
