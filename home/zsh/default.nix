@@ -80,6 +80,9 @@
     "oh-my-zsh" = {
       enable = true;
       theme = "";
+      extraConfig = ''
+        zstyle :omz:plugins:ssh-agent identities id_ed25519
+      '';
       plugins = [
         "git"
         "z"
@@ -149,7 +152,7 @@
       ls = "${pkgs.eza}/bin/eza -1 --icons=auto";
       tree = "${pkgs.eza}/bin/eza --icons=auto --tree";
       grep = "grep --color=always";
-      remote-deploy = "nixos-rebuild switch --flake .#neoaccess --target-host jon@192.168.5.113 --sudo --ask-sudo-password";
+      remote-deploy="nixos-rebuild switch --flake .#omnissiah --target-host jon@omnissiah --build-host jon@omnissiah --sudo --ask-sudo-password";
     };
   };
 }

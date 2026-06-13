@@ -152,6 +152,7 @@ in
     tela-icon-theme
 
     libayatana-appindicator
+    android-tools
 
     # Never trust anything a frontend developer makes
     sandboxed-frontend

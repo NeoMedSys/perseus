@@ -74,7 +74,7 @@ in
         enable = true;
         interval = "weekly";
     };
-
+    tailscale.enable = true;
     dbus.enable = true;
 
     logind = {
@@ -375,7 +375,6 @@ in
     nix-direnv.enable = true;
   };
 
-  programs.adb.enable = true;
   # ========================
   # SYSTEMD SERVICES
   # ========================

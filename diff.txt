@@ -1,16 +1,729 @@
- flake.lock                                |  67 ++++++------
- home/zsh/default.nix                      |  15 +++
- hosts/default/configuration.nix           |   7 +-
- modules/apps/flatpak.nix                  |  53 +++++++---
- modules/dev/nixvim.nix                    |  12 +++
- modules/hardware/clammy.nix               |  19 +++-
- modules/hardware/thunderbolt-ethernet.nix |   8 ++
- modules/system/environment.nix            |  15 +--
- modules/system/niri.nix                   |   6 +-
- modules/system/system-packages.nix        |   4 +
- packages/sandboxed-steam.nix              |   9 +-
- programs/clammy/src/state.rs              |  50 +++++----
- programs/clammy/src/wayland_manager.rs    |  76 +++++++++++---
- programs/clammy/src/wayland_output.rs     | 118 ++++++++++-----------
- programs/niri-reaper/src/main.rs          | 168 ++++++++++++++++++++++++------
- 15 files changed, 442 insertions(+), 185 deletions(-)
+diff --git a/diff.txt b/diff.txt
+index 72df04f..e69de29 100644
+--- a/diff.txt
++++ b/diff.txt
+@@ -1,16 +0,0 @@
+- flake.lock                                |  67 ++++++------
+- home/zsh/default.nix                      |  15 +++
+- hosts/default/configuration.nix           |   7 +-
+- modules/apps/flatpak.nix                  |  53 +++++++---
+- modules/dev/nixvim.nix                    |  12 +++
+- modules/hardware/clammy.nix               |  19 +++-
+- modules/hardware/thunderbolt-ethernet.nix |   8 ++
+- modules/system/environment.nix            |  15 +--
+- modules/system/niri.nix                   |   6 +-
+- modules/system/system-packages.nix        |   4 +
+- packages/sandboxed-steam.nix              |   9 +-
+- programs/clammy/src/state.rs              |  50 +++++----
+- programs/clammy/src/wayland_manager.rs    |  76 +++++++++++---
+- programs/clammy/src/wayland_output.rs     | 118 ++++++++++-----------
+- programs/niri-reaper/src/main.rs          | 168 ++++++++++++++++++++++++------
+- 15 files changed, 442 insertions(+), 185 deletions(-)
+diff --git a/flake.lock b/flake.lock
+index 0b9da27..432d623 100644
+--- a/flake.lock
++++ b/flake.lock
+@@ -3,11 +3,11 @@
+     "betterfox": {
+       "flake": false,
+       "locked": {
+-        "lastModified": 1761706852,
+-        "narHash": "sha256-sZEgmCrAm0SnRoFmn8glScII07Kvpa6cYdC6jHHQmMI=",
++        "lastModified": 1780192992,
++        "narHash": "sha256-1eC6DowuP9PzaLxh1t2FKzUeJFw/ppimXIiwyJsRKwc=",
+         "owner": "yokoffing",
+         "repo": "Betterfox",
+-        "rev": "3b159ac8fbb3d5921db8ff1763aa51cff12ea1ec",
++        "rev": "c97bc0639609f35ff9d65522e3ddb03dac69e938",
+         "type": "github"
+       },
+       "original": {
+@@ -34,12 +34,12 @@
+     },
+     "crane": {
+       "locked": {
+-        "lastModified": 1752946753,
+-        "narHash": "sha256-g5uP3jIj+STUcfTJDKYopxnSijs2agRg13H0SGL5iE4=",
+-        "rev": "544d09fecc8c2338542c57f3f742f1a0c8c71e13",
+-        "revCount": 744,
++        "lastModified": 1776394852,
++        "narHash": "sha256-K0i9GoNk2To1RQkW348EY4c7RYf3mD74hWlGSc/9sk0=",
++        "rev": "db220b8709cea4bd43c9adcd4192f212fb6768d1",
++        "revCount": 839,
+         "type": "tarball",
+-        "url": "https://api.flakehub.com/f/pinned/ipetkov/crane/0.21.0/019823c9-9d32-7d49-aa52-b8209fd297f7/source.tar.gz"
++        "url": "https://api.flakehub.com/f/pinned/ipetkov/crane/0.23.3/019d9966-e100-7831-aae4-a70427980cdf/source.tar.gz"
+       },
+       "original": {
+         "type": "tarball",
+@@ -53,11 +53,11 @@
+         ]
+       },
+       "locked": {
+-        "lastModified": 1766814755,
+-        "narHash": "sha256-iVZHhERnR07PMLSjVMW/72ah7ezyqaxdADmJQ8FdToU=",
++        "lastModified": 1779650358,
++        "narHash": "sha256-53a8H1NhppF1Wte4XRm78AAb23ZVOda2vlmpV4sa90U=",
+         "owner": "AvengeMedia",
+         "repo": "danksearch",
+-        "rev": "2356124150c7a35a735d88a3d54a941b6cfe3a02",
++        "rev": "e4be0825f06370d506e4755cfeae97247a18586f",
+         "type": "github"
+       },
+       "original": {
+@@ -73,11 +73,11 @@
+         ]
+       },
+       "locked": {
+-        "lastModified": 1765838956,
+-        "narHash": "sha256-A3a2ZfvjirX8VIdIPI+nAyukWs6vx4vet3fU0mpr7lU=",
++        "lastModified": 1778679554,
++        "narHash": "sha256-zoPgnxIlDja91/4TmnCui+Fzc/xU/1jdJFu9bovtOk8=",
+         "owner": "AvengeMedia",
+         "repo": "dgop",
+-        "rev": "0ff697a4e3418966caa714c838fc73f1ef6ba59b",
++        "rev": "06574b54fa4878a93d8605962d50b13e9528a4ca",
+         "type": "github"
+       },
+       "original": {
+@@ -93,11 +93,11 @@
+         ]
+       },
+       "locked": {
+-        "lastModified": 1758287904,
+-        "narHash": "sha256-IGmaEf3Do8o5Cwp1kXBN1wQmZwQN3NLfq5t4nHtVtcU=",
++        "lastModified": 1781152676,
++        "narHash": "sha256-RxWs5ND31KzTG7wvMM+PMfUjyNpmIEr999lqNARaM5o=",
+         "owner": "nix-community",
+         "repo": "disko",
+-        "rev": "67ff9807dd148e704baadbd4fd783b54282ca627",
++        "rev": "ff8702b4de27f72b4c78573dfb89ec74e36abdf1",
+         "type": "github"
+       },
+       "original": {
+@@ -111,15 +111,14 @@
+         "flake-compat": "flake-compat",
+         "nixpkgs": [
+           "nixpkgs"
+-        ],
+-        "quickshell": "quickshell"
++        ]
+       },
+       "locked": {
+-        "lastModified": 1777161418,
+-        "narHash": "sha256-+H6YJckJZD+JaUWCUOTaVmx7S3JChrf0UzsrtQQ1Vcg=",
++        "lastModified": 1781308853,
++        "narHash": "sha256-BbQrn32/xDmK6HMX7QAxWChInAsbgc+ZqybMnGpit8U=",
+         "owner": "AvengeMedia",
+         "repo": "DankMaterialShell",
+-        "rev": "28f68ac702960b5179808db1a0870b16c5d5c3b3",
++        "rev": "3701b3d7a3c20c5c208ce45fd530feb8eb71af78",
+         "type": "github"
+       },
+       "original": {
+@@ -137,16 +136,16 @@
+         "rust-analyzer-src": "rust-analyzer-src"
+       },
+       "locked": {
+-        "lastModified": 1754030776,
+-        "narHash": "sha256-EA7Qh5OUc3tgYrLHfG7zU6wxltvWsJ0+sFxOcVsbjOY=",
+-        "rev": "451f184de2958f8e725acba046ec10670dd771a1",
+-        "revCount": 2342,
++        "lastModified": 1777624102,
++        "narHash": "sha256-thSyElkje577x/kAbP72nHlfiFc1a+tCudskLPHXe9s=",
++        "rev": "4d81601e0b73f20d81d066754ad0e7d1e7f75a06",
++        "revCount": 2646,
+         "type": "tarball",
+-        "url": "https://api.flakehub.com/f/pinned/nix-community/fenix/0.1.2342%2Brev-451f184de2958f8e725acba046ec10670dd771a1/019864bb-9457-74e4-91eb-576a61bf0c54/source.tar.gz"
++        "url": "https://api.flakehub.com/f/pinned/nix-community/fenix/0.1.2646%2Brev-4d81601e0b73f20d81d066754ad0e7d1e7f75a06/019de2eb-4157-78e2-99a4-47e0ab7416f5/source.tar.gz"
+       },
+       "original": {
+         "type": "tarball",
+-        "url": "https://flakehub.com/f/nix-community/fenix/0"
++        "url": "https://flakehub.com/f/nix-community/fenix/0.1"
+       }
+     },
+     "flake-compat": {
+@@ -173,11 +172,11 @@
+         ]
+       },
+       "locked": {
+-        "lastModified": 1756770412,
+-        "narHash": "sha256-+uWLQZccFHwqpGqr2Yt5VsW/PbeJVTn9Dk6SHWhNRPw=",
++        "lastModified": 1778716662,
++        "narHash": "sha256-m1Yf0wZ8j1OHjTc2UwHwyQRSnNeSgLJOd7q5Y45hzi4=",
+         "owner": "hercules-ci",
+         "repo": "flake-parts",
+-        "rev": "4524271976b625a4a605beefd893f270620fd751",
++        "rev": "f7c1a2d347e4c52d5fb8d10cb4d94b5884e546fb",
+         "type": "github"
+       },
+       "original": {
+@@ -188,25 +187,7 @@
+     },
+     "flake-utils": {
+       "inputs": {
+-        "systems": "systems"
+-      },
+-      "locked": {
+-        "lastModified": 1731533236,
+-        "narHash": "sha256-l0KFg5HjrsfsO/JpG+r7fRrqm12kzFHyUHqHCVpMMbI=",
+-        "owner": "numtide",
+-        "repo": "flake-utils",
+-        "rev": "11707dc2f618dd54ca8739b309ec4fc024de578b",
+-        "type": "github"
+-      },
+-      "original": {
+-        "owner": "numtide",
+-        "repo": "flake-utils",
+-        "type": "github"
+-      }
+-    },
+-    "flake-utils_2": {
+-      "inputs": {
+-        "systems": "systems_3"
++        "systems": "systems_2"
+       },
+       "locked": {
+         "lastModified": 1681202837,
+@@ -229,11 +210,11 @@
+         "nixpkgs": "nixpkgs"
+       },
+       "locked": {
+-        "lastModified": 1756977098,
+-        "narHash": "sha256-ZR+hcJxJLircUzOAhdmBp8+45c7SfY/f05/1M6bl1Ls=",
++        "lastModified": 1778690486,
++        "narHash": "sha256-Nk132msk7uzjpGjYSpOHVhkyw6dcp+T5Bm2vcXDirEU=",
+         "owner": "DeterminateSystems",
+         "repo": "fh",
+-        "rev": "3abaad486737b012e3ecef83e15b4c98b8293424",
++        "rev": "60bc295f78863baaeed36500c1b2b5527b053769",
+         "type": "github"
+       },
+       "original": {
+@@ -249,55 +230,27 @@
+         ]
+       },
+       "locked": {
+-        "lastModified": 1764866045,
+-        "narHash": "sha256-0GsEtXV9OquDQ1VclQfP16cU5VZh7NEVIOjSH4UaJuM=",
++        "lastModified": 1781319724,
++        "narHash": "sha256-ZGuxexEMo4Xv28KJ0dX/m/PHN4oZIOnxHZpNTyrvx4M=",
+         "owner": "nix-community",
+         "repo": "home-manager",
+-        "rev": "f63d0fe9d81d36e5fc95497217a72e02b8b7bcab",
++        "rev": "8355f0a16b2dbb06a97959a918af5b239bbe05ae",
+         "type": "github"
+       },
+       "original": {
+         "owner": "nix-community",
+-        "ref": "release-25.11",
++        "ref": "release-26.05",
+         "repo": "home-manager",
+         "type": "github"
+       }
+     },
+-    "ixx": {
+-      "inputs": {
+-        "flake-utils": [
+-          "nixvim",
+-          "nuschtosSearch",
+-          "flake-utils"
+-        ],
+-        "nixpkgs": [
+-          "nixvim",
+-          "nuschtosSearch",
+-          "nixpkgs"
+-        ]
+-      },
+-      "locked": {
+-        "lastModified": 1754860581,
+-        "narHash": "sha256-EM0IE63OHxXCOpDHXaTyHIOk2cNvMCGPqLt/IdtVxgk=",
+-        "owner": "NuschtOS",
+-        "repo": "ixx",
+-        "rev": "babfe85a876162c4acc9ab6fb4483df88fa1f281",
+-        "type": "github"
+-      },
+-      "original": {
+-        "owner": "NuschtOS",
+-        "ref": "v0.1.1",
+-        "repo": "ixx",
+-        "type": "github"
+-      }
+-    },
+     "nix-flatpak": {
+       "locked": {
+-        "lastModified": 1768656715,
+-        "narHash": "sha256-Sbh037scxKFm7xL0ahgSCw+X2/5ZKeOwI2clqrYr9j4=",
++        "lastModified": 1780908363,
++        "narHash": "sha256-llGS4y3Qh1eUkli3/Y2VY9FV3GOUKFZR1E2BDftt45Q=",
+         "owner": "gmodena",
+         "repo": "nix-flatpak",
+-        "rev": "123fe29340a5b8671367055b75a6e7c320d6f89a",
++        "rev": "1df08625f0f8c7d6e300a0e5df7955bbb877d809",
+         "type": "github"
+       },
+       "original": {
+@@ -308,46 +261,46 @@
+     },
+     "nixpkgs": {
+       "locked": {
+-        "lastModified": 1755922037,
+-        "narHash": "sha256-wY1+2JPH0ZZC4BQefoZw/k+3+DowFyfOxv17CN/idKs=",
+-        "rev": "b1b3291469652d5a2edb0becc4ef0246fff97a7c",
+-        "revCount": 808723,
++        "lastModified": 1777954456,
++        "narHash": "sha256-hGdgeU2Nk87RAuZyYjyDjFL6LK7dAZN5RE9+hrDTkDU=",
++        "rev": "549bd84d6279f9852cae6225e372cc67fb91a4c1",
++        "revCount": 992384,
+         "type": "tarball",
+-        "url": "https://api.flakehub.com/f/pinned/NixOS/nixpkgs/0.2505.808723%2Brev-b1b3291469652d5a2edb0becc4ef0246fff97a7c/0198daf7-011a-7703-95d7-57146e794342/source.tar.gz"
++        "url": "https://api.flakehub.com/f/pinned/NixOS/nixpkgs/0.1.992384%2Brev-549bd84d6279f9852cae6225e372cc67fb91a4c1/019df915-70b5-73a2-a5a4-63c620b45d9f/source.tar.gz"
+       },
+       "original": {
+         "type": "tarball",
+-        "url": "https://flakehub.com/f/NixOS/nixpkgs/0"
++        "url": "https://flakehub.com/f/NixOS/nixpkgs/0.1"
+       }
+     },
+     "nixpkgs_2": {
+       "locked": {
+-        "lastModified": 1774244481,
+-        "narHash": "sha256-4XfMXU0DjN83o6HWZoKG9PegCvKvIhNUnRUI19vzTcQ=",
++        "lastModified": 1780902259,
++        "narHash": "sha256-q8yYEC5f1mFlQO9RGna4LTc9QrcvWunX6FYp83munkQ=",
+         "owner": "NixOS",
+         "repo": "nixpkgs",
+-        "rev": "4590696c8693fea477850fe379a01544293ca4e2",
++        "rev": "bd0ff2d3eac24699c3664d5966b9ef36f388e2ca",
+         "type": "github"
+       },
+       "original": {
+         "owner": "NixOS",
+-        "ref": "nixos-25.11",
++        "ref": "nixos-26.05",
+         "repo": "nixpkgs",
+         "type": "github"
+       }
+     },
+     "nixpkgs_3": {
+       "locked": {
+-        "lastModified": 1764831616,
+-        "narHash": "sha256-OtzF5wBvO0jgW1WW1rQU9cMGx7zuvkF7CAVJ1ypzkxA=",
++        "lastModified": 1780453794,
++        "narHash": "sha256-bXMRa9VTsHSPXL4Cw8R6JJLQeY3Y/IP4+YJCYVmQ7FY=",
+         "owner": "NixOS",
+         "repo": "nixpkgs",
+-        "rev": "c97c47f2bac4fa59e2cbdeba289686ae615f8ed4",
++        "rev": "6b316287bae2ee04c9b93c8c858d930fd07d7338",
+         "type": "github"
+       },
+       "original": {
+         "owner": "NixOS",
+-        "ref": "nixos-25.11",
++        "ref": "nixos-26.05",
+         "repo": "nixpkgs",
+         "type": "github"
+       }
+@@ -372,69 +325,23 @@
+       "inputs": {
+         "flake-parts": "flake-parts",
+         "nixpkgs": "nixpkgs_3",
+-        "nuschtosSearch": "nuschtosSearch",
+-        "systems": "systems_2"
++        "systems": "systems"
+       },
+       "locked": {
+-        "lastModified": 1765027122,
+-        "narHash": "sha256-yeJjXWkzK7B6j+tiN9aGc1yZNxuH16O5kR68m8Axu8w=",
++        "lastModified": 1781287895,
++        "narHash": "sha256-980eQ7c4HeblAy/gUxrYw9GmZHerC9qsjG/2NsbT0Xo=",
+         "owner": "nix-community",
+         "repo": "nixvim",
+-        "rev": "cb9357fe1068cbcec1e6ddc525ab5226f7781d09",
++        "rev": "d5a4ff853474e0459402ff307545c6df70b267e6",
+         "type": "github"
+       },
+       "original": {
+         "owner": "nix-community",
+-        "ref": "nixos-25.11",
++        "ref": "nixos-26.05",
+         "repo": "nixvim",
+         "type": "github"
+       }
+     },
+-    "nuschtosSearch": {
+-      "inputs": {
+-        "flake-utils": "flake-utils",
+-        "ixx": "ixx",
+-        "nixpkgs": [
+-          "nixvim",
+-          "nixpkgs"
+-        ]
+-      },
+-      "locked": {
+-        "lastModified": 1758272005,
+-        "narHash": "sha256-1u3xTH+3kaHhztPmWtLAD8LF5pTYLR2CpsPFWTFnVtQ=",
+-        "owner": "NuschtOS",
+-        "repo": "search",
+-        "rev": "aa975a3757f28ce862812466c5848787b868e116",
+-        "type": "github"
+-      },
+-      "original": {
+-        "owner": "NuschtOS",
+-        "repo": "search",
+-        "type": "github"
+-      }
+-    },
+-    "quickshell": {
+-      "inputs": {
+-        "nixpkgs": [
+-          "dms",
+-          "nixpkgs"
+-        ]
+-      },
+-      "locked": {
+-        "lastModified": 1776854048,
+-        "narHash": "sha256-lLbV66V3RMNp1l8/UelmR4YzoJ5ONtgvEtiUMJATH/o=",
+-        "ref": "refs/heads/master",
+-        "rev": "783c953987dc56ff0601abe6845ed96f1d00495a",
+-        "revCount": 806,
+-        "type": "git",
+-        "url": "https://git.outfoxxed.me/quickshell/quickshell"
+-      },
+-      "original": {
+-        "rev": "783c953987dc56ff0601abe6845ed96f1d00495a",
+-        "type": "git",
+-        "url": "https://git.outfoxxed.me/quickshell/quickshell"
+-      }
+-    },
+     "root": {
+       "inputs": {
+         "betterfox": "betterfox",
+@@ -455,11 +362,11 @@
+     "rust-analyzer-src": {
+       "flake": false,
+       "locked": {
+-        "lastModified": 1753974682,
+-        "narHash": "sha256-Ya4Ecj8JaKkapgYCCybzZBcypXpblhuG0hVDzdy2zyo=",
++        "lastModified": 1777583169,
++        "narHash": "sha256-dVJ4+wrRKc8oIgp3rLOFSq1obt/sCKlXy3h47qof/w0=",
+         "owner": "rust-lang",
+         "repo": "rust-analyzer",
+-        "rev": "68e7ec90bf29c9b17d0dcdb3358de5dee7f4afb5",
++        "rev": "aa64e4828a2bbba44463c1229a81c748d3cce583",
+         "type": "github"
+       },
+       "original": {
+@@ -476,11 +383,11 @@
+         ]
+       },
+       "locked": {
+-        "lastModified": 1774303811,
+-        "narHash": "sha256-fhG4JAcLgjKwt+XHbjs8brpWnyKUfU4LikLm3s0Q/ic=",
++        "lastModified": 1780547341,
++        "narHash": "sha256-Gq8KNx5A7hBB3uGJaj6eQfLDIz5YdLu92gqBcvHvoUo=",
+         "owner": "Mic92",
+         "repo": "sops-nix",
+-        "rev": "614e256310e0a4f8a9ccae3fa80c11844fba7042",
++        "rev": "9ed65852b6257fbeae4355bc24ecfea307ca759a",
+         "type": "github"
+       },
+       "original": {
+@@ -519,24 +426,9 @@
+         "type": "github"
+       }
+     },
+-    "systems_3": {
+-      "locked": {
+-        "lastModified": 1681028828,
+-        "narHash": "sha256-Vy1rq5AaRuLzOxct8nz4T6wlgyUR7zLU309k9mBC768=",
+-        "owner": "nix-systems",
+-        "repo": "default",
+-        "rev": "da67096a3b9bf56a91d16901293e51ba5b49a27e",
+-        "type": "github"
+-      },
+-      "original": {
+-        "owner": "nix-systems",
+-        "repo": "default",
+-        "type": "github"
+-      }
+-    },
+     "thunderbird-catppuccin": {
+       "inputs": {
+-        "flake-utils": "flake-utils_2",
++        "flake-utils": "flake-utils",
+         "nixpkgs": "nixpkgs_4"
+       },
+       "locked": {
+diff --git a/flake.nix b/flake.nix
+index c1a77c6..fc06682 100644
+--- a/flake.nix
++++ b/flake.nix
+@@ -1,45 +1,32 @@
+ {
+   description = "Nix-Up - The friendly NixOS Laptop Configuration";
+-
+   inputs = {
+-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.11";
+-    nixvim.url = "github:nix-community/nixvim/nixos-25.11";
+-
++    nixpkgs.url = "github:NixOS/nixpkgs/nixos-26.05";
++    nixvim.url = "github:nix-community/nixvim/nixos-26.05";
+     dgop.url = "github:AvengeMedia/dgop";
+     dgop.inputs.nixpkgs.follows = "nixpkgs";
+-
+     disko.url = "github:nix-community/disko";
+     disko.inputs.nixpkgs.follows = "nixpkgs";
+-
+     flakehub.url = "github:DeterminateSystems/fh";
+-
+     nix-flatpak.url = "github:gmodena/nix-flatpak";
+-
+     sops-nix.url = "github:Mic92/sops-nix";
+     sops-nix.inputs.nixpkgs.follows = "nixpkgs";
+-
+-    home-manager.url = "github:nix-community/home-manager/release-25.11";
++    home-manager.url = "github:nix-community/home-manager/release-26.05";
+     home-manager.inputs.nixpkgs.follows = "nixpkgs";
+-
+     dms.url = "github:AvengeMedia/DankMaterialShell";
+     dms.inputs.nixpkgs.follows = "nixpkgs";
+-
+     danksearch.url = "github:AvengeMedia/danksearch";
+     danksearch.inputs.nixpkgs.follows = "nixpkgs";
+-
+     thunderbird-catppuccin.url = "github:catppuccin/thunderbird";
+-
+     catppuccin-firefox = {
+       url = "github:catppuccin/firefox";
+       flake = false;
+     };
+-
+     betterfox = {
+       url = "github:yokoffing/Betterfox";
+       flake = false;
+     };
+   };
+-
+   outputs = { nixpkgs, flakehub, home-manager, ... }@inputs:
+   let
+     version = "1.3.0";
+diff --git a/home/zsh/default.nix b/home/zsh/default.nix
+index 094c328..6479cfe 100644
+--- a/home/zsh/default.nix
++++ b/home/zsh/default.nix
+@@ -80,6 +80,9 @@
+     "oh-my-zsh" = {
+       enable = true;
+       theme = "";
++      extraConfig = ''
++        zstyle :omz:plugins:ssh-agent identities id_ed25519
++      '';
+       plugins = [
+         "git"
+         "z"
+@@ -149,7 +152,7 @@
+       ls = "${pkgs.eza}/bin/eza -1 --icons=auto";
+       tree = "${pkgs.eza}/bin/eza --icons=auto --tree";
+       grep = "grep --color=always";
+-      remote-deploy = "nixos-rebuild switch --flake .#neoaccess --target-host jon@192.168.5.113 --sudo --ask-sudo-password";
++      remote-deploy="nixos-rebuild switch --flake .#omnissiah --target-host jon@omnissiah --build-host jon@omnissiah --sudo --ask-sudo-password";
+     };
+   };
+ }
+diff --git a/modules/dev/gpl.nix b/modules/dev/gpl.nix
+index 2623663..6ae8106 100644
+--- a/modules/dev/gpl.nix
++++ b/modules/dev/gpl.nix
+@@ -2,24 +2,39 @@
+ let
+   devTools = userConfig.devTools;
+   hasDevTool = tool: builtins.elem tool devTools;
+-
+   goPackages = with pkgs; [ go gopls ];
+   rustPackages = with pkgs; [ rustc cargo rust-analyzer clippy ];
+-  nodePkgs = with pkgs; [ 
+-    nodejs_22 
+-    nodePackages.pnpm 
++  nodePkgs = with pkgs; [
++    nodejs_22
++    pnpm
+     typescript
+-    nodePackages.typescript-language-server
+-    vscode-langservers-extracted 
++    typescript-language-server
++    vscode-langservers-extracted
+     tailwindcss-language-server
+   ];
++  androidComposition = pkgs.androidenv.composeAndroidPackages {
++    platformVersions = [ "35" "36" ];
++    buildToolsVersions = [ "35.0.0" "36.0.0" ];
++    includeEmulator = false;
++    includeSystemImages = false;
++    includeSources = false;
++  };
++  androidPackages = [
++    androidComposition.androidsdk
++    pkgs.gradle
++    pkgs.jdk17
++  ];
+ in
+ {
++  nixpkgs.config = lib.mkIf (hasDevTool "android") {
++    android_sdk.accept_license = true;
++  };
++
+   environment.systemPackages =
+     (lib.optionals (hasDevTool "go") goPackages) ++
+     (lib.optionals (hasDevTool "rust") rustPackages) ++
+-    (lib.optionals (hasDevTool "node") nodePkgs);
+-
++    (lib.optionals (hasDevTool "node") nodePkgs) ++
++    (lib.optionals (hasDevTool "android") androidPackages);
+   environment.variables = lib.mkMerge [
+     (lib.mkIf (hasDevTool "go") {
+       GOPATH = "$HOME/go";
+@@ -33,8 +48,12 @@ in
+       NODE_OPTIONS = "--max-old-space-size=8192";
+       PNPM_HOME = "$HOME/.local/share/pnpm";
+     })
++    (lib.mkIf (hasDevTool "android") {
++      ANDROID_HOME = "${androidComposition.androidsdk}/libexec/android-sdk";
++      ANDROID_SDK_ROOT = "${androidComposition.androidsdk}/libexec/android-sdk";
++      JAVA_HOME = "${pkgs.jdk17}/lib/openjdk";
++    })
+   ];
+-
+   environment.sessionVariables = lib.mkIf (hasDevTool "node") {
+     PATH = [ "$HOME/.local/share/pnpm" ];
+   };
+diff --git a/modules/hardware/thunderbolt-ethernet.nix b/modules/hardware/thunderbolt-ethernet.nix
+index 3bad03d..35fc140 100644
+--- a/modules/hardware/thunderbolt-ethernet.nix
++++ b/modules/hardware/thunderbolt-ethernet.nix
+@@ -1,7 +1,6 @@
+ { pkgs, ... }:
+ {
+   services.hardware.bolt.enable = true;
+-
+   boot.initrd.availableKernelModules = [
+     "usbhid"
+     "hid_generic"
+@@ -10,22 +9,4 @@
+     "hid_logitech_dj"
+     "thunderbolt"
+   ];
+-
+-  # Prevent thunderbolt controller reset on hot-unplug (causes kernel panic)
+-  boot.kernelParams = [
+-    "thunderbolt.host_reset_on_disconnect=0"
+-  ];
+-
+-  # TLP RUNTIME_PM_DENYLIST moved to environment.nix to prevent module collisions
+-
+-  services.udev.extraRules = ''
+-    ACTION=="add", SUBSYSTEM=="thunderbolt", ATTR{authorized}=="1", \
+-      RUN+="${pkgs.bash}/bin/bash -c '${pkgs.coreutils}/bin/sleep 3 && echo 1 > /sys/bus/pci/rescan'"
+-
+-    ACTION=="change", SUBSYSTEM=="thunderbolt", ATTR{authorized}=="1", \
+-      RUN+="${pkgs.bash}/bin/bash -c '${pkgs.coreutils}/bin/sleep 3 && echo 1 > /sys/bus/pci/rescan'"
+-
+-    ACTION=="remove", SUBSYSTEM=="thunderbolt", \
+-      RUN+="${pkgs.bash}/bin/bash -c '${pkgs.coreutils}/bin/sleep 1 && echo 1 > /sys/bus/pci/rescan'"
+-  '';
+ }
+diff --git a/modules/system/environment.nix b/modules/system/environment.nix
+index 19a0f47..f61fe66 100644
+--- a/modules/system/environment.nix
++++ b/modules/system/environment.nix
+@@ -74,7 +74,7 @@ in
+         enable = true;
+         interval = "weekly";
+     };
+-
++    tailscale.enable = true;
+     dbus.enable = true;
+ 
+     logind = {
+@@ -375,7 +375,6 @@ in
+     nix-direnv.enable = true;
+   };
+ 
+-  programs.adb.enable = true;
+   # ========================
+   # SYSTEMD SERVICES
+   # ========================
+diff --git a/modules/system/system-packages.nix b/modules/system/system-packages.nix
+index 81448fc..f1542be 100644
+--- a/modules/system/system-packages.nix
++++ b/modules/system/system-packages.nix
+@@ -152,6 +152,7 @@ in
+     tela-icon-theme
+ 
+     libayatana-appindicator
++    android-tools
+ 
+     # Never trust anything a frontend developer makes
+     sandboxed-frontend
+diff --git a/system/hardware-configuration.nix b/system/hardware-configuration.nix
+index 88e447b..06e924a 100644
+--- a/system/hardware-configuration.nix
++++ b/system/hardware-configuration.nix
+@@ -1,39 +1,25 @@
+-# Do not modify this file!  It was generated by ‘nixos-generate-config’
+-# and may be overwritten by future invocations.  Please make changes
+-# to /etc/nixos/configuration.nix instead.
++# Generic hardware configuration for CI evaluation
+ { config, lib, pkgs, modulesPath, ... }:
+-
+ {
+-  imports =
+-    [ (modulesPath + "/installer/scan/not-detected.nix")
+-    ];
+-
+-  boot.initrd.availableKernelModules = [ "xhci_pci" "thunderbolt" "nvme" "usb_storage" "sd_mod" "rtsx_pci_sdmmc" ];
++  imports = [ (modulesPath + "/profiles/qemu-guest.nix") ];
++  
++  boot.initrd.availableKernelModules = [ "ata_piix" "ohci_pci" "ehci_pci" "ahci" "sd_mod" "sr_mod" ];
+   boot.initrd.kernelModules = [ ];
+-  boot.kernelModules = [ "kvm-intel" ];
++  boot.kernelModules = [ ];
+   boot.extraModulePackages = [ ];
+-
+-  fileSystems."/" =
+-    { device = "/dev/disk/by-uuid/7cb5d7be-49a4-4a68-ad5d-a65ac6f07344";
+-      fsType = "ext4";
+-    };
+-
+-  fileSystems."/boot" =
+-    { device = "/dev/disk/by-uuid/59D0-18C4";
+-      fsType = "vfat";
+-      options = [ "fmask=0022" "dmask=0022" ];
+-    };
+-
++  
++  boot.loader.grub.enable = true;
++  boot.loader.grub.device = "/dev/sda";
++  
++  fileSystems."/" = {
++    device = "/dev/disk/by-uuid/00000000-0000-0000-0000-000000000000";
++    fsType = "ext4";
++  };
++  
+   swapDevices = [ ];
+-
+-  # Enables DHCP on each ethernet and wireless interface. In case of scripted networking
+-  # (the default) this is the recommended approach. When using systemd-networkd it's
+-  # still possible to use this option, but it's recommended to use it in conjunction
+-  # with explicit per-interface declarations with `networking.interfaces.<interface>.useDHCP`.
++  
+   networking.useDHCP = lib.mkDefault true;
+-  # networking.interfaces.enp0s13f0u3u2u4.useDHCP = lib.mkDefault true;
+-  # networking.interfaces.wlp9s0.useDHCP = lib.mkDefault true;
+-
++  
+   nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
+-  hardware.cpu.intel.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
++  virtualisation.vmware.guest.enable = lib.mkDefault true;
+ }
