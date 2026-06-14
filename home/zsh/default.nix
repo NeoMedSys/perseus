@@ -124,6 +124,10 @@
       --color=marker:#f4dbd6,fg+:#cad3f5,prompt:#c6a0f6,hl+:#ed8796"
     '';
 
+    initExtra = ''
+      [[ -f ~/.config/forgejo/token ]] && export FORGEJO_TOKEN=$(cat ~/.config/forgejo/token)
+    '';
+
     shellAliases = {
       update = "sudo nixos-rebuild switch --flake";
       g = "git";
