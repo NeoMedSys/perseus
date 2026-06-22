@@ -38,4 +38,8 @@ in
     EDITOR = "nvim"; 
     VISUAL = "nvim";
   };
+
+  home.sessionPath = [
+    "$HOME/go/bin"
+  ];
 }

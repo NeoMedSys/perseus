@@ -33,9 +33,11 @@
         ${pkgs.iproute2}/bin/ip rule del to 100.64.0.0/10 lookup 52 priority 5080 2>/dev/null || true
         ${pkgs.iproute2}/bin/ip rule del to 192.0.0.0/24 lookup 52 priority 5080 2>/dev/null || true
         ${pkgs.iproute2}/bin/ip rule del to 100.64.0.0/10 lookup 52 priority 1000 2>/dev/null || true
-        ${pkgs.iproute2}/bin/ip rule add to 100.64.0.0/10 lookup 52 priority 1000
         ${pkgs.iproute2}/bin/ip rule del to 192.0.0.0/24 lookup 52 priority 1000 2>/dev/null || true
-        ${pkgs.iproute2}/bin/ip rule add to 192.0.0.0/24 lookup 52 priority 1000
+        ${pkgs.iproute2}/bin/ip rule del to 100.64.0.0/10 lookup 52 priority 100 2>/dev/null || true
+        ${pkgs.iproute2}/bin/ip rule add to 100.64.0.0/10 lookup 52 priority 100
+        ${pkgs.iproute2}/bin/ip rule del to 192.0.0.0/24 lookup 52 priority 100 2>/dev/null || true
+        ${pkgs.iproute2}/bin/ip rule add to 192.0.0.0/24 lookup 52 priority 100
       '';
     in [ "+${script}" ];
   };
