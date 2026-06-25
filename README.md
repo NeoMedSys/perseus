@@ -167,6 +167,11 @@ ntl report                                          # Security audit report
 - **Auditable build provenance.** All flake inputs pinned to revisions in CI, `nix flake metadata` diffs surfaced on each release. Anyone can verify exactly what shipped between two tags.
 - **Reproducible install ISO.** A `nix build .#installer` target that produces a custom ISO with `setup.sh` and the flake already on it. Boot the ISO, run one command, walk away.
 
+### Paranoid Mode
+
+Optional hardening for users with stricter threat models:
+
+- **Hardware-backed secrets.** YubiKey or SoloKey for SSH auth, sudo, sops-nix age key, and LUKS unlock. Pull the token — secrets stop decrypting, SSH stops authing, sudo waits for a touch. Keys never exist as files on disk.
 
 ## Acknowledgements
 
