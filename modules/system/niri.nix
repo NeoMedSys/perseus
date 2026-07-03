@@ -20,7 +20,7 @@
         keyboard {
             xkb {
                 layout "us,no"
-                options "caps:escape,eurosign:e,grp:lalt_lshift_toggle"
+                options "caps:escape,eurosign:e,grp:rwin_toggle"
             }
         }
 

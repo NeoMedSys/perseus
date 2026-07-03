@@ -31,18 +31,23 @@
       Type = "oneshot";
       ExecStart = let
         script = pkgs.writeShellScript "mullvad-route-fix" ''
+          # Purge any of our CIDR rules NOT at priority 50, and any pointing
+          # at main (leaky — main has the default gw). Mullvad's fwmark rule
+          # moves priority across reconnects (seen at 97 and 99), so we sit
+          # at 50, well above it, pointing at table 52 (tailscale0-only, no leak).
           ${pkgs.iproute2}/bin/ip rule show \
-            | ${pkgs.gnugrep}/bin/grep -E "to (100.64.0.0/10|192.0.0.0/24) lookup 52" \
-            | ${pkgs.gnugrep}/bin/grep -v "priority 100 " \
+            | ${pkgs.gnugrep}/bin/grep -E "to (100.64.0.0/10|192.0.0.0/24) lookup (52|main)" \
+            | ${pkgs.gnugrep}/bin/grep -vE "lookup 52 .*priority 50( |$)" \
             | while read -r line; do
                 prio=$(echo "$line" | ${pkgs.gnused}/bin/sed -n 's/.*priority \([0-9]*\).*/\1/p')
                 dst=$(echo "$line" | ${pkgs.gnused}/bin/sed -n 's/.*to \([^ ]*\) .*/\1/p')
-                ${pkgs.iproute2}/bin/ip rule del to "$dst" lookup 52 priority "$prio" 2>/dev/null || true
+                tbl=$(echo "$line" | ${pkgs.gnused}/bin/sed -n 's/.*lookup \([a-z0-9]*\).*/\1/p')
+                ${pkgs.iproute2}/bin/ip rule del to "$dst" lookup "$tbl" priority "$prio" 2>/dev/null || true
               done
-          ${pkgs.iproute2}/bin/ip rule show | ${pkgs.gnugrep}/bin/grep -q "to 100.64.0.0/10 lookup 52 priority 100" \
-            || ${pkgs.iproute2}/bin/ip rule add to 100.64.0.0/10 lookup 52 priority 100
-          ${pkgs.iproute2}/bin/ip rule show | ${pkgs.gnugrep}/bin/grep -q "to 192.0.0.0/24 lookup 52 priority 100" \
-            || ${pkgs.iproute2}/bin/ip rule add to 192.0.0.0/24 lookup 52 priority 100
+          ${pkgs.iproute2}/bin/ip rule show | ${pkgs.gnugrep}/bin/grep -q "to 100.64.0.0/10 lookup 52 priority 50" \
+            || ${pkgs.iproute2}/bin/ip rule add to 100.64.0.0/10 lookup 52 priority 50 2>/dev/null || true
+          ${pkgs.iproute2}/bin/ip rule show | ${pkgs.gnugrep}/bin/grep -q "to 192.0.0.0/24 lookup 52 priority 50" \
+            || ${pkgs.iproute2}/bin/ip rule add to 192.0.0.0/24 lookup 52 priority 50 2>/dev/null || true
         '';
       in "+${script}";
     };

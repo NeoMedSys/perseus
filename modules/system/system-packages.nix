@@ -8,6 +8,7 @@ let
   ntl-daemon = pkgs.callPackage ../../packages/ntl-daemon.nix {};
   niri-reaper = pkgs.callPackage ../../packages/niri-reaper.nix {};
   sandboxed-steam = pkgs.callPackage ../../packages/sandboxed-steam.nix {};
+  sandboxed-edge = pkgs.callPackage ../../packages/sandboxed-edge.nix {};
 in
 {
   # Global software packages to install
@@ -41,6 +42,8 @@ in
     v4l-utils
     libcamera
     networkmanagerapplet
+    element-desktop
+    remmina
     ntl-daemon
     niri-reaper
     evtest
@@ -155,7 +158,9 @@ in
     android-tools
 
     # Never trust anything a frontend developer makes
+    # Never trust Microsoft! 
     sandboxed-frontend
+    sandboxed-edge
 
     # Pandoc and live MD rendering script
     pandoc

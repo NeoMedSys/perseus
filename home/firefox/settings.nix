@@ -85,6 +85,8 @@ in
 
   # Block more unwanted stuff
   "dom.block_multiple_popups" = lock-true;
+  "dom.events.asyncClipboard.readText" = true;
+  "dom.events.asyncClipboard.clipboardItem" = true;
   "browser.privatebrowsing.forceMediaMemoryCache" = lock-true;
   "browser.contentblocking.category" = {
     Value = "strict";
