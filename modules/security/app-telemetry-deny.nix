@@ -32,7 +32,6 @@
       "googletagmanager.com"
       "api.segment.io"
       "api.mixpanel.com"
-      "heapanalytics.com" 
 
       # Crash reporting
       "sentry.io"
@@ -48,12 +47,10 @@
 
       # VS Code
       "vscode-update.azurewebsites.net"
-      "vortex.data.microsoft.com"
       
       # AI & Cloud
       "copilot-proxy.githubusercontent.com"
       "api.githubcopilot.com"
-      "github.com/features/copilot"
       "cloud.tabnine.com"
       "api.tabnine.com"
       "server.codeium.com"

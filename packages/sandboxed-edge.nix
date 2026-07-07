@@ -1,5 +1,9 @@
 { pkgs, ... }:
 let
+  vomit-icon = pkgs.fetchurl {
+    url = "https://raw.githubusercontent.com/twitter/twemoji/v14.0.2/assets/svg/1f92e.svg";
+    hash = "sha256-oTcDe303TiVy/yFL2GNnXC4dyzXgPxEiuadP3ae6d1U=";
+  };
   edge-launcher = pkgs.writeShellScriptBin "edge" ''
     ISOLATION_DIR="$HOME/.local/share/app-isolation/edge"
     mkdir -p "$ISOLATION_DIR"/.local/share/keyrings
@@ -54,7 +58,8 @@ pkgs.stdenv.mkDerivation {
   version = "1.0";
   phases = [ "installPhase" ];
   installPhase = ''
-    mkdir -p $out/bin $out/share/applications
+    mkdir -p $out/bin $out/share/applications $out/share/icons/hicolor/scalable/apps
+    cp ${vomit-icon} $out/share/icons/hicolor/scalable/apps/edge-vomit.svg
     ln -s ${edge-launcher}/bin/edge $out/bin/edge
     cat > $out/share/applications/edge.desktop << EOF
 [Desktop Entry]
@@ -62,10 +67,11 @@ Type=Application
 Name=Edge (Prison)
 Comment=Microsoft Edge (Strict Bubblewrap Isolation)
 Exec=$out/bin/edge %u
-Icon=microsoft-edge
+Icon=edge-vomit
 Terminal=false
 Categories=Network;WebBrowser;
 StartupWMClass=microsoft-edge
 EOF
   '';
 }
+

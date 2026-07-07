@@ -16,6 +16,7 @@
     login = {
       fprintAuth = true;
       nodelay = true;
+      rules.auth.fprintd.args = [ "timeout=10" "max-tries=1" ];
     };
   };
 

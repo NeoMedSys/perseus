@@ -9,6 +9,9 @@ let
   niri-reaper = pkgs.callPackage ../../packages/niri-reaper.nix {};
   sandboxed-steam = pkgs.callPackage ../../packages/sandboxed-steam.nix {};
   sandboxed-edge = pkgs.callPackage ../../packages/sandboxed-edge.nix {};
+  sandboxed-spotify = pkgs.callPackage ../../packages/sandboxed-spotify.nix {};
+  sandboxed-teams = pkgs.callPackage ../../packages/sandboxed-teams.nix {};
+  sandboxed-slack = pkgs.callPackage ../../packages/sandboxed-slack.nix {};
 in
 {
   # Global software packages to install
@@ -94,6 +97,9 @@ in
     antimicrox
     sandboxed-steam
 
+    # music
+    sandboxed-spotify
+
     # Network tools
     dig
     iftop
@@ -110,6 +116,12 @@ in
     # Secure communication
     signal-desktop
     element-desktop
+
+    # microsoft communication (ugh -- not because its nice to have)
+    sandboxed-teams
+
+    # slack
+    sandboxed-slack
 
     # Privacy and security tools
     dnscrypt-proxy

@@ -74,9 +74,9 @@ in
   };
 
   networking = {
+    nameservers = [ "127.0.0.1" "::1" ];
     nftables.enable = true;
     networkmanager = {
-      insertNameservers = [ "127.0.0.1" "::1" ];
       dns = "none";
 
       settings = {
@@ -174,13 +174,10 @@ in
   };
 
   environment.variables = {
-    DOTNET_CLI_TELEMETRY_OPTOUT = "1";
     POWERSHELL_TELEMETRY_OPTOUT = "1";
     HOMEBREW_NO_ANALYTICS = "1";
-    NEXT_TELEMETRY_DISABLED = "1";
     GATSBY_TELEMETRY_DISABLED = "1";
     FUNCTIONS_CORE_TOOLS_TELEMETRY_OPTOUT = "1";
-    VSCODE_TELEMETRY_LEVEL = "off";
   };
 
   boot.kernel.sysctl = {
