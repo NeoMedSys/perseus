@@ -74,7 +74,10 @@ in
         enable = true;
         interval = "weekly";
     };
-    tailscale.enable = true;
+    tailscale = {
+      enable = true;
+      extraSetFlags = [ "--accept-dns=false" ];
+    };
     dbus.enable = true;
 
     logind = {

@@ -5,6 +5,29 @@ let
     mkdir -p "$ISOLATION_DIR" "$ISOLATION_DIR-cache"
     USER_ID=$(id -u)
     XDG_RT="/run/user/$USER_ID"
+    WAYLAND_SOCK=''${WAYLAND_DISPLAY:-wayland-0}
+    # Filtered session bus: portals + notifications + MPRIS, own systemd unit
+    PROXY_DIR="$XDG_RT/spotify-prison"
+    mkdir -p "$PROXY_DIR"
+    PROXY_BUS="$PROXY_DIR/bus"
+    if [ ! -S "$PROXY_BUS" ]; then
+      rm -f "$PROXY_BUS"
+      ${pkgs.systemd}/bin/systemd-run --user --collect \
+        --unit=spotify-dbus-proxy \
+        ${pkgs.xdg-dbus-proxy}/bin/xdg-dbus-proxy \
+          "unix:path=$XDG_RT/bus" \
+          "$PROXY_BUS" \
+          --filter \
+          --talk=org.freedesktop.portal.Desktop \
+          --talk=org.freedesktop.Notifications \
+          --own=org.mpris.MediaPlayer2.spotify \
+          --call=org.freedesktop.portal.Desktop=* \
+          --broadcast=org.freedesktop.portal.Desktop=*
+      for i in $(seq 1 50); do
+        [ -S "$PROXY_BUS" ] && break
+        sleep 0.1
+      done
+    fi
     exec ${pkgs.systemd}/bin/systemd-run \
       --user --scope --collect \
       --unit=sandboxed-spotify-$(date +%s) \
@@ -20,37 +43,30 @@ let
         --dev /dev \
         --dev-bind /dev/dri /dev/dri \
         --tmpfs /tmp \
-        --tmpfs /dev/shm \
         --bind-try /tmp/.X11-unix /tmp/.X11-unix \
-        --setenv DISPLAY "''${DISPLAY:-:0}" \
+        --tmpfs /dev/shm \
         --ro-bind /sys /sys \
         --ro-bind /nix /nix \
         --ro-bind /run/current-system /run/current-system \
-        --ro-bind /etc/fonts /etc/fonts \
-        --ro-bind /etc/resolv.conf /etc/resolv.conf \
-        --ro-bind /etc/machine-id /etc/machine-id \
-        --ro-bind /etc/passwd /etc/passwd \
-        --ro-bind /etc/group /etc/group \
-        --ro-bind /etc/hosts /etc/hosts \
+        --ro-bind /etc /etc \
         --ro-bind /run/opengl-driver /run/opengl-driver \
-        --ro-bind "${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt" /etc/ssl/certs/ca-certificates.crt \
         --bind "$ISOLATION_DIR" "$HOME/.config/spotify" \
         --bind "$ISOLATION_DIR-cache" "$HOME/.cache/spotify" \
         --dir "$HOME" \
         --dir "$XDG_RT" \
-        --ro-bind-try "$XDG_RT/$WAYLAND_DISPLAY" "$XDG_RT/$WAYLAND_DISPLAY" \
+        --ro-bind-try "$XDG_RT/$WAYLAND_SOCK" "$XDG_RT/$WAYLAND_SOCK" \
         --ro-bind-try "$XDG_RT/pipewire-0" "$XDG_RT/pipewire-0" \
         --ro-bind-try "$XDG_RT/pulse" "$XDG_RT/pulse" \
-        --bind-try "$XDG_RT/bus" "$XDG_RT/bus" \
+        --bind "$PROXY_BUS" "$XDG_RT/bus" \
         --setenv HOME "$HOME" \
         --setenv XDG_RUNTIME_DIR "$XDG_RT" \
-        --setenv WAYLAND_DISPLAY "''${WAYLAND_DISPLAY:-wayland-0}" \
+        --setenv WAYLAND_DISPLAY "$WAYLAND_SOCK" \
         --setenv XDG_SESSION_TYPE "wayland" \
+        --setenv DBUS_SESSION_BUS_ADDRESS "unix:path=$XDG_RT/bus" \
+        --setenv DISPLAY "''${DISPLAY:-:0}" \
         --setenv SPOTIFY_DISABLE_TELEMETRY "1" \
-        --setenv HOSTNAME "workstation" \
-        --setenv SSL_CERT_FILE /etc/ssl/certs/ca-certificates.crt \
-        --setenv NIX_SSL_CERT_FILE /etc/ssl/certs/ca-certificates.crt \
         --setenv ELECTRON_DISABLE_CRASH_REPORTER "1" \
+        --setenv HOSTNAME "workstation" \
         ${pkgs.spotify}/bin/spotify \
           --ozone-platform=wayland \
           --enable-features=UseOzonePlatform,VaapiVideoDecoder,VaapiVideoEncoder \
@@ -62,7 +78,7 @@ let
 in
 pkgs.stdenv.mkDerivation {
   name = "sandboxed-spotify-wayland";
-  version = "2.1";
+  version = "2.2";
   dontUnpack = true;
   installPhase = ''
     mkdir -p $out/bin $out/share/applications
