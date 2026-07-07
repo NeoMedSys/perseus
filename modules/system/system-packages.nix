@@ -6,7 +6,6 @@ let
   dms = inputs.dms.packages.${pkgs.system}.default;
   dgop = inputs.dgop.packages.${pkgs.system}.default;
   ntl-daemon = pkgs.callPackage ../../packages/ntl-daemon.nix {};
-  niri-reaper = pkgs.callPackage ../../packages/niri-reaper.nix {};
   sandboxed-steam = pkgs.callPackage ../../packages/sandboxed-steam.nix {};
   sandboxed-edge = pkgs.callPackage ../../packages/sandboxed-edge.nix {};
   sandboxed-spotify = pkgs.callPackage ../../packages/sandboxed-spotify.nix {};
@@ -48,7 +47,6 @@ in
     element-desktop
     remmina
     ntl-daemon
-    niri-reaper
     evtest
     libinput
 

@@ -30,8 +30,6 @@
     "${inputs.self}/modules/security/secrets.nix"
   ] ++ lib.optionals (userConfig.email or false) [
     "${inputs.self}/modules/apps/thunderbird.nix"
-  ] ++ lib.optionals ((userConfig.flatpakApps or []) != []) [
-    "${inputs.self}/modules/apps/flatpak.nix"
   ];
 
   networking.hostName = userConfig.hostname;
