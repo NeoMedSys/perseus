@@ -46,20 +46,34 @@ in
 
         mkdir -p "$BLOCKLIST_DIR"
 
-        # Download to temp file first — only replace on success
-        if curl -fsSL --max-time 60 -o "$BLOCKLIST_TMP" \
-          "https://big.oisd.nl/domainswild"; then
-          mv "$BLOCKLIST_TMP" "$BLOCKLIST_FILE"
-          # Reload dnscrypt-proxy to pick up new list
-          systemctl restart dnscrypt-proxy || true
+        SOURCES=(
+          "https://big.oisd.nl/domainswild"
+          "https://raw.githubusercontent.com/hagezi/dns-blocklists/main/wildcard/native.winoffice-onlydomains.txt"
+          "https://raw.githubusercontent.com/hagezi/dns-blocklists/main/wildcard/native.apple-onlydomains.txt"
+          "https://raw.githubusercontent.com/hagezi/dns-blocklists/main/wildcard/native.tiktok-onlydomains.txt"
+          "https://raw.githubusercontent.com/hagezi/dns-blocklists/main/wildcard/native.lgwebos-onlydomains.txt"
+          "https://raw.githubusercontent.com/hagezi/dns-blocklists/main/wildcard/native.samsung-onlydomains.txt"
+          "https://raw.githubusercontent.com/hagezi/dns-blocklists/main/wildcard/doh-vpn-proxy-bypass-onlydomains.txt"
+        )
+
+        : > "$BLOCKLIST_TMP"
+        FAILED=0
+        for url in "''${SOURCES[@]}"; do
+          if ! curl -fsSL --max-time 60 "$url" >> "$BLOCKLIST_TMP"; then
+            echo "FAILED: $url"
+            FAILED=1
+          fi
+        done
+
+        # Only replace if every source downloaded — partial list is worse than stale list
+        if [ "$FAILED" -eq 0 ]; then
+          sort -u "$BLOCKLIST_TMP" > "$BLOCKLIST_FILE"
+          rm -f "$BLOCKLIST_TMP"
+          systemctl restart dnscrypt-proxy2 || true
         else
           rm -f "$BLOCKLIST_TMP"
-          # Keep existing blocklist if download fails — no disruption
         fi
       '';
-      PrivateTmp = true;
-      ProtectSystem = "full";
-      ReadWritePaths = [ "/var/lib/dnscrypt-proxy" ];
     };
   };
 
@@ -74,9 +88,9 @@ in
   };
 
   networking = {
+    nameservers = [ "127.0.0.1" "::1" ];
     nftables.enable = true;
     networkmanager = {
-      insertNameservers = [ "127.0.0.1" "::1" ];
       dns = "none";
 
       settings = {
@@ -174,13 +188,10 @@ in
   };
 
   environment.variables = {
-    DOTNET_CLI_TELEMETRY_OPTOUT = "1";
     POWERSHELL_TELEMETRY_OPTOUT = "1";
     HOMEBREW_NO_ANALYTICS = "1";
-    NEXT_TELEMETRY_DISABLED = "1";
     GATSBY_TELEMETRY_DISABLED = "1";
     FUNCTIONS_CORE_TOOLS_TELEMETRY_OPTOUT = "1";
-    VSCODE_TELEMETRY_LEVEL = "off";
   };
 
   boot.kernel.sysctl = {

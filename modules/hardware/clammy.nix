@@ -1,4 +1,4 @@
-{ pkgs, lib, inputs, ... }:
+{ pkgs, lib, inputs, config, ... }:
 let
   clammy = pkgs.callPackage ../../packages/clammy.nix { inherit inputs; };
 
@@ -53,6 +53,25 @@ in
     "d /run/clammy 0755 root root -"
     "f /run/clammy/docked 0666 root root - 0"
   ];
+
+  security.pam.services.sudo.rules.auth.check-docked = {
+    order = config.security.pam.services.sudo.rules.auth.fprintd.order - 1;
+    control = "[success=1 default=ignore]";
+    modulePath = "${pkgs.linux-pam}/lib/security/pam_exec.so";
+    args = [ "quiet" "/run/current-system/sw/bin/check-docked" ];
+  };
+  security.pam.services.polkit-1.rules.auth.check-docked = {
+    order = config.security.pam.services.polkit-1.rules.auth.fprintd.order - 1;
+    control = "[success=1 default=ignore]";
+    modulePath = "${pkgs.linux-pam}/lib/security/pam_exec.so";
+    args = [ "quiet" "/run/current-system/sw/bin/check-docked" ];
+  };
+  security.pam.services.login.rules.auth.check-docked = {
+    order = config.security.pam.services.login.rules.auth.fprintd.order - 1;
+    control = "[success=1 default=ignore]";
+    modulePath = "${pkgs.linux-pam}/lib/security/pam_exec.so";
+    args = [ "quiet" "/run/current-system/sw/bin/check-docked" ];
+  };
 
   services.dbus = {
     enable = true;

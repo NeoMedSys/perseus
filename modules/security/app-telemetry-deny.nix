@@ -4,56 +4,9 @@
   # Conservative approach - only block actual telemetry endpoints
   networking.hosts = {
     "0.0.0.0" = [
-      "ssl.google-analytics.com"
-      "mobile.events.data.microsoft.com"
-      "heapanalytics.com"
-      "metrics.icloud.com"
-
-      # Slack telemetry (specific endpoints only)
-      "crash-reports.slack.com"
-      "stats.slack.com"
-      "telemetry.slack.com"
-      "analytics.slack.com"
-      "lb.slack-msgs.com"
-
-      # Microsoft Teams / Office
-      "telemetry.teams.microsoft.com"
-      "watson.telemetry.microsoft.com"
-      "vortex.data.microsoft.com"
-      "browser.events.data.microsoft.com"
-
-      # Zoom
-      "logfiles.zoom.us"
-      "events.zoom.us"
-      "analytics.zoom.us"
-
-      # Common analytics
-      "google-analytics.com"
-      "googletagmanager.com"
-      "api.segment.io"
-      "api.mixpanel.com"
-      "heapanalytics.com" 
-
-      # Crash reporting
-      "sentry.io"
-      "bugsnag.com"
-      "hockeyapp.net"
-
-      # Microsoft General
-      "telemetry.microsoft.com"
-      "watson.live.com"
-      "sqm.telemetry.microsoft.com"
-      "choice.microsoft.com"
-      "choice.microsoft.com.nsatc.net"
-
-      # VS Code
-      "vscode-update.azurewebsites.net"
-      "vortex.data.microsoft.com"
-      
-      # AI & Cloud
+      # AI assistants — deliberate policy, not telemetry; owned here
       "copilot-proxy.githubusercontent.com"
       "api.githubcopilot.com"
-      "github.com/features/copilot"
       "cloud.tabnine.com"
       "api.tabnine.com"
       "server.codeium.com"
@@ -63,19 +16,22 @@
       "codewhisperer.aws.amazon.com"
       "ai.jetbrains.com"
       "ai-assistant.jetbrains.com"
-
-      # DoH/DoT bypass prevention - force apps to use system DNS
-      "mozilla.cloudflare-dns.com"
-      "dns.google"
-      "dns.google.com"
-      "dns.quad9.net"
-      "dns9.quad9.net"
-      "dns10.quad9.net"
-      "dns11.quad9.net"
-      "doh.opendns.com"
-      "doh.cleanbrowsing.org"
-      "dns.adguard.com"
-      "dns.nextdns.io"
+      # App telemetry not covered by community lists
+      "crash-reports.slack.com"
+      "telemetry.slack.com"
+      "stats.slack.com"
+      "analytics.slack.com"
+      "telemetry.teams.microsoft.com"
+      "watson.telemetry.microsoft.com"
+      "vortex.data.microsoft.com"
+      "browser.events.data.microsoft.com"
+      "mobile.events.data.microsoft.com"
+      "telemetry.microsoft.com"
+      "sqm.telemetry.microsoft.com"
+      "logfiles.zoom.us"
+      "events.zoom.us"
+      "analytics.zoom.us"
+      "crashdump.spotify.com"
     ];
   };
 

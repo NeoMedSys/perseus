@@ -15,7 +15,6 @@
     "${inputs.self}/modules/security/privacy.nix"
     "${inputs.self}/modules/security/techoverlord_protection.nix"
     "${inputs.self}/modules/security/app-telemetry-deny.nix"
-    "${inputs.self}/modules/security/firejail.nix"
     "${inputs.self}/modules/security/ssh-config.nix"
     "${inputs.self}/modules/dev/nixvim.nix"
     "${inputs.self}/modules/dev/gpl.nix"
@@ -31,8 +30,6 @@
     "${inputs.self}/modules/security/secrets.nix"
   ] ++ lib.optionals (userConfig.email or false) [
     "${inputs.self}/modules/apps/thunderbird.nix"
-  ] ++ lib.optionals ((userConfig.flatpakApps or []) != []) [
-    "${inputs.self}/modules/apps/flatpak.nix"
   ];
 
   networking.hostName = userConfig.hostname;

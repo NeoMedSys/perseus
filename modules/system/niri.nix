@@ -20,7 +20,7 @@
         keyboard {
             xkb {
                 layout "us,no"
-                options "caps:escape,eurosign:e,grp:lalt_lshift_toggle"
+                options "caps:escape,eurosign:e,grp:rwin_toggle"
             }
         }
 
@@ -306,7 +306,6 @@
     spawn-at-startup "opensnitch-ui"
     spawn-at-startup "clammy-start-session"
     spawn-at-startup "ntl-daemon"
-    spawn-at-startup "niri-reaper"
 
     // Clipboard history (for DMS clipboard widget)
     spawn-at-startup "bash" "-c" "wl-paste --watch cliphist store &"
@@ -344,16 +343,6 @@
         "org.freedesktop.impl.portal.ScreenCast" = [ "gnome" ];
       };
     };
-  };
-
-  security.pam.services.swaylock = {
-    text = ''
-      auth [success=1 default=ignore] pam_exec.so quiet /run/current-system/sw/bin/check-docked
-      auth [success=done default=ignore] pam_fprintd.so
-      auth required pam_unix.so nullok
-      account required pam_unix.so
-      session required pam_unix.so
-    '';
   };
 
   # Create DMS config directories and placeholder kdl files

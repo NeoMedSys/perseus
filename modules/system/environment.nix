@@ -74,7 +74,10 @@ in
         enable = true;
         interval = "weekly";
     };
-    tailscale.enable = true;
+    tailscale = {
+      enable = true;
+      extraSetFlags = [ "--accept-dns=false" ];
+    };
     dbus.enable = true;
 
     logind = {
@@ -122,7 +125,6 @@ in
         LogLevel = 3;
       };
     };
-    fprintd.enable = true;
 
     # Audio
     pulseaudio.enable = false;
@@ -153,7 +155,7 @@ in
   # ========================
   users.users.${userConfig.username} = {
     isNormalUser = true;
-    extraGroups = [ "wheel" "networkmanager" "audio" "video" "docker" "input" "adbusers" ];
+    extraGroups = [ "wheel" "networkmanager" "audio" "video" "input" "adbusers" ];  # "docker" removed
     shell = pkgs.zsh;
     packages = with pkgs; [ tree ];
     homeMode = "0751";
@@ -163,10 +165,11 @@ in
   security = {
     sudo.extraRules = [{
       users = [ userConfig.username ];
-      commands = [{
-        command = "ALL";
-        options = [ "NOPASSWD" "NOSETENV" ];
-      }];
+      commands = [
+        { command = "/run/current-system/sw/bin/systemctl reboot";                options = [ "NOPASSWD" "NOSETENV" ]; }
+        { command = "/run/current-system/sw/bin/systemctl start wg-quick-mullvad"; options = [ "NOPASSWD" "NOSETENV" ]; }
+        { command = "/run/current-system/sw/bin/systemctl stop wg-quick-mullvad";  options = [ "NOPASSWD" "NOSETENV" ]; }
+      ];
     }];
     rtkit.enable = true;
     polkit.extraConfig = ''
@@ -209,11 +212,11 @@ in
         '';
       }];
     };
-    firewall = {
-      allowedTCPPorts = [ 7775 443 ];
-      allowedUDPPorts = [ 53 ];
-      checkReversePath = "loose";
-    };
+      #firewall = {
+      #  allowedTCPPorts = [ 7775 443 ];
+      #  allowedUDPPorts = [ 53 ];
+      #  checkReversePath = "loose";
+      #};
   };
   # ========================
   # ENVIRONMENT & VARIABLES
@@ -359,6 +362,7 @@ in
     enable = true;
     enableOnBoot = false;
   };
+  virtualisation.podman.enable = true;   # no dockerCompat — docker binary already exists
   # ========================
   # PROGRAMS
   # ========================

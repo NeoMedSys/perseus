@@ -1,89 +1,93 @@
 { pkgs, ... }:
-
 let
-  # Explicitly include tools needed for the Steam Runtime to unpack itself
+  # Tools the Steam bootstrap/pressure-vessel needs inside the jail
   runtimeDependencies = with pkgs; [
     coreutils
     gnutar
     gzip
     xz
     dbus
-    kmod # Needed for hardware detection
+    kmod
   ];
-
   steam-launcher = pkgs.writeShellScriptBin "steam" ''
-    # 1. Setup isolation directory
-    export ISOLATION_DIR="$HOME/.local/share/app-isolation/steam"
-    mkdir -p "$ISOLATION_DIR"
-
-    # Disable browser hardware accel (black screen fix for xwayland)
+    ISOLATION_DIR="$HOME/.local/share/app-isolation/steam"
     mkdir -p "$ISOLATION_DIR/.local/share/Steam/config"
+    mkdir -p "$HOME/Downloads"
+    # Disable browser hardware accel (black screen fix for xwayland)
     echo '"SteamClient" { "DisableBrowserHardwareAccel" "1" }' > "$ISOLATION_DIR/.local/share/Steam/config/steam_dev.cfg"
-
-    # 2. Fix NixOS 25.11 'unbound variable' crashes
-    # The wrapper script uses 'set -u', so these MUST be defined.
-    export LD_LIBRARY_PATH="''${LD_LIBRARY_PATH:-}"
-    export STEAM_EXTRA_PROFILE="''${STEAM_EXTRA_PROFILE:-}"
-    export STEAM_RUNTIME="''${STEAM_RUNTIME:-1}"
-    
-    # 3. Path & Home Isolation
-    # We redirect HOME so Steam data stays in the isolation folder
-    export HOME="$ISOLATION_DIR"
-    # Ensure the bootstrap can find tar/gzip/etc.
-    export PATH="${pkgs.lib.makeBinPath runtimeDependencies}:/run/current-system/sw/bin:$PATH"
-
-
-    # 4. Environment variables for Display/Audio/Controller
-    : ''${XDG_RUNTIME_DIR:=/run/user/$(id -u)}
-    : ''${PULSE_SERVER:=unix:$XDG_RUNTIME_DIR/pulse/native}
-    : ''${WAYLAND_DISPLAY:=wayland-1}
-    : ''${DISPLAY:=:0}
-
-    # 5. Execute via systemd-run
+    # Fix NixOS 'unbound variable' crashes — wrapper uses 'set -u'
+    LD_LIBRARY_PATH="''${LD_LIBRARY_PATH:-}"
+    STEAM_EXTRA_PROFILE="''${STEAM_EXTRA_PROFILE:-}"
+    STEAM_RUNTIME="''${STEAM_RUNTIME:-1}"
+    USER_ID=$(id -u)
+    XDG_RT="/run/user/$USER_ID"
+    WAYLAND_SOCK="''${WAYLAND_DISPLAY:-wayland-1}"
+    X_DISPLAY="''${DISPLAY:-:0}"
+    JAIL_PATH="${pkgs.lib.makeBinPath runtimeDependencies}:/run/current-system/sw/bin"
     exec ${pkgs.systemd}/bin/systemd-run \
-      --user \
-      --scope \
-      --collect \
+      --user --scope --collect \
       --unit=sandboxed-steam-$(date +%s) \
       --description="Sandboxed Steam" \
       -p MemoryHigh=12G \
       -p MemoryMax=14G \
-      -E "HOME=$HOME" \
-      -E "PATH=$PATH" \
-      -E "LD_LIBRARY_PATH=$LD_LIBRARY_PATH" \
-      -E "STEAM_EXTRA_PROFILE=$STEAM_EXTRA_PROFILE" \
-      -E "STEAM_RUNTIME=$STEAM_RUNTIME" \
-      -E "PULSE_SERVER=$PULSE_SERVER" \
-      -E "DISPLAY=$DISPLAY" \
-      -E "WAYLAND_DISPLAY=$WAYLAND_DISPLAY" \
-      -E "XDG_RUNTIME_DIR=$XDG_RUNTIME_DIR" \
-      -E "NIXOS_OZONE_WL=1" \
-      -E "STEAMWEBHELPER_ARGS=--disable-gpu" \
-      -E "STEAM_DISABLE_BROWSER_HARDWARE_ACCEL=1" \
-      ${pkgs.steam}/bin/steam \
-        -cef-disable-gpu-compositing \
-        -console \
-        "$@"
+      ${pkgs.bubblewrap}/bin/bwrap \
+        --unshare-all \
+        --share-net \
+        --die-with-parent \
+        --new-session \
+        --hostname "workstation" \
+        --proc /proc \
+        --dev-bind /dev /dev \
+        --tmpfs /dev/shm \
+        --tmpfs /tmp \
+        --bind-try /tmp/.X11-unix /tmp/.X11-unix \
+        --ro-bind /sys /sys \
+        --ro-bind /nix /nix \
+        --ro-bind /run/current-system /run/current-system \
+        --ro-bind /run/opengl-driver /run/opengl-driver \
+        --ro-bind-try /run/opengl-driver-32 /run/opengl-driver-32 \
+        --ro-bind /etc/fonts /etc/fonts \
+        --ro-bind /etc/resolv.conf /etc/resolv.conf \
+        --ro-bind /etc/machine-id /etc/machine-id \
+        --ro-bind /etc/passwd /etc/passwd \
+        --ro-bind /etc/group /etc/group \
+        --ro-bind /etc/hosts /etc/hosts \
+        --ro-bind-try /etc/localtime /etc/localtime \
+        --ro-bind "${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt" /etc/ssl/certs/ca-certificates.crt \
+        --bind "$ISOLATION_DIR" "$HOME" \
+        --bind "$HOME/Downloads" "$HOME/Downloads" \
+        --dir "$XDG_RT" \
+        --bind-try "$XDG_RT/$WAYLAND_SOCK" "$XDG_RT/$WAYLAND_SOCK" \
+        --bind-try "$XDG_RT/pipewire-0" "$XDG_RT/pipewire-0" \
+        --bind-try "$XDG_RT/pulse" "$XDG_RT/pulse" \
+        --setenv HOME "$HOME" \
+        --setenv PATH "$JAIL_PATH" \
+        --setenv XDG_RUNTIME_DIR "$XDG_RT" \
+        --setenv WAYLAND_DISPLAY "$WAYLAND_SOCK" \
+        --setenv DISPLAY "$X_DISPLAY" \
+        --setenv PULSE_SERVER "unix:$XDG_RT/pulse/native" \
+        --setenv LD_LIBRARY_PATH "$LD_LIBRARY_PATH" \
+        --setenv STEAM_EXTRA_PROFILE "$STEAM_EXTRA_PROFILE" \
+        --setenv STEAM_RUNTIME "$STEAM_RUNTIME" \
+        --setenv NIXOS_OZONE_WL "1" \
+        --setenv STEAMWEBHELPER_ARGS "--disable-gpu" \
+        --setenv STEAM_DISABLE_BROWSER_HARDWARE_ACCEL "1" \
+        --setenv SSL_CERT_FILE /etc/ssl/certs/ca-certificates.crt \
+        ${pkgs.steam}/bin/steam \
+          -cef-disable-gpu-compositing \
+          -console \
+          "$@"
   '';
 in
 pkgs.stdenv.mkDerivation {
   name = "sandboxed-steam-wayland";
-  version = "1.4";
+  version = "2.0";
   dontUnpack = true;
-
   installPhase = ''
-    mkdir -p $out/bin $out/share/applications $out/share/icons/hicolor/scalable/apps
-
-    # Use the icon from the steam package
-    if [ -f "${pkgs.steam}/share/icons/hicolor/scalable/apps/steam.svg" ]; then
-      cp "${pkgs.steam}/share/icons/hicolor/scalable/apps/steam.svg" $out/share/icons/hicolor/scalable/apps/
-    elif [ -f "${pkgs.steam}/share/pixmaps/steam.png" ]; then
-      cp "${pkgs.steam}/share/pixmaps/steam.png" $out/share/icons/hicolor/scalable/apps/steam.png
-    fi
-
+    mkdir -p $out/bin $out/share/applications
+    ln -s ${pkgs.steam}/share/icons $out/share/icons
     cp ${steam-launcher}/bin/steam $out/bin/steam
     chmod +x $out/bin/steam
-
     cat > $out/share/applications/steam.desktop << EOF
 [Desktop Entry]
 Type=Application
