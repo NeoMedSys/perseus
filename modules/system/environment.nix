@@ -402,6 +402,17 @@ in
     sockets.systemd-rfkill.enable = false;
   };
 
+  systemd.user.services.opensnitch-ui = {
+    description = "OpenSnitch UI";
+    wantedBy = [ "graphical-session.target" ];
+    partOf = [ "graphical-session.target" ];
+    serviceConfig = {
+      ExecStart = "${pkgs.opensnitch-ui}/bin/opensnitch-ui";
+      Restart = "always";
+      RestartSec = 3;
+    };
+  };
+
   systemd.user.services.fusuma = {
     description = "Fusuma Touchpad Gestures";
     wantedBy = [ "graphical-session.target" ];
