@@ -94,8 +94,9 @@ in
   systemd.services.nastyTechLords = {
     description = "NastyTechLords Security Audit Daemon";
     serviceConfig = {
-        Type = "oneshot";
+		Type = "oneshot";
         ExecStart = "${nastyTechLords}/bin/nasty-tech-lords";
+        SuccessExitStatus = [ 2 ];
         
         StandardOutput = "journal";
         StandardError = "journal";
