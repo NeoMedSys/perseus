@@ -362,6 +362,15 @@ in
     enable = true;
     enableOnBoot = false;
   };
+
+  # networking.nftables.ruleset is applied declaratively, so a rebuild flushes
+  # and reapplies the whole ruleset — taking Docker's nat and filter tables with
+  # it. Docker does not notice and does not reinstall them until it restarts,
+  # leaving containers with no masquerade and no route out.
+  systemd.services.docker = {
+    after = [ "nftables.service" ];
+    partOf = [ "nftables.service" ];
+  };
   virtualisation.podman.enable = true;   # no dockerCompat — docker binary already exists
   # ========================
   # PROGRAMS
