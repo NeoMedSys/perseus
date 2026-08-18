@@ -5,7 +5,6 @@
     ({ ... }: { _module.args = { inherit userConfig; }; })
     inputs.dms.nixosModules.default
     # ── Always loaded ──
-	"${inputs.self}/modules/hardware/camera.nix"
     "${inputs.self}/modules/system/environment.nix"
     "${inputs.self}/modules/system/system-packages.nix"
     "${inputs.self}/modules/system/greetd.nix"
