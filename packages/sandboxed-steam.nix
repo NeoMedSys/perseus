@@ -55,10 +55,9 @@ let
 
     ${pkgs.systemd}/bin/systemd-run \
       --user --scope --collect \
-      --unit=sandboxed-steam-$(date +%s) \
+	  --unit=sandboxed-steam-$(date +%s) \
       --description="Sandboxed Steam" \
-      -p MemoryHigh=12G \
-      -p MemoryMax=14G \
+      -p MemoryMax=22G \
       ${pkgs.bubblewrap}/bin/bwrap \
         --unshare-all \
         --share-net \
